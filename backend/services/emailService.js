@@ -7,7 +7,11 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER, // e.g., krishjr3010@gmail.com
         pass: process.env.EMAIL_PASS  // App Password e.g., ccpn pvgl njbt egpr
-    }
+    },
+    // Fast fail on connection issues (e.g. Render Free Tier blocks SMTP)
+    connectionTimeout: 5000, // 5 seconds
+    greetingTimeout: 5000,
+    socketTimeout: 10000
 });
 
 /**
