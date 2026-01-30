@@ -1,6 +1,7 @@
-// src/pages/InformationPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { User, Mail, Phone, GraduationCap, Globe, Target, ArrowRight, Loader2, CheckCircle, Smartphone } from "lucide-react";
+import { motion } from "framer-motion";
 
 type InformationForm = {
   name: string;
@@ -19,6 +20,59 @@ const initialForm: InformationForm = {
   goal: "",
   target_country: "",
 };
+
+// UI Helper Component defined outside to prevent re-mount/focus loss
+const InputGroup = ({
+  label,
+  name,
+  value,
+  onChange,
+  error,
+  icon: Icon,
+  type = "text",
+  placeholder,
+  options
+}: {
+  label: string,
+  name: keyof InformationForm,
+  value: string,
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void,
+  error?: string,
+  icon: any,
+  type?: string,
+  placeholder?: string,
+  options?: { val: string, label: string }[]
+}) => (
+  <div className="mb-4">
+    <label className="form-label small fw-bold text-secondary mb-2">{label}</label>
+    <div className="position-relative">
+      <Icon className="position-absolute top-50 translate-middle-y text-secondary opacity-50" style={{ left: '16px' }} size={18} />
+      {options ? (
+        <select
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`modern-input ${error ? "is-invalid border-danger" : ""}`}
+          style={{ paddingLeft: '48px', appearance: 'none' }}
+        >
+          <option value="">{placeholder || "Select an option"}</option>
+          {options.map(opt => <option key={opt.val} value={opt.val}>{opt.label}</option>)}
+        </select>
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`modern-input ${error ? "is-invalid border-danger" : ""}`}
+          placeholder={placeholder}
+          style={{ paddingLeft: '48px' }}
+        />
+      )}
+    </div>
+    {error && <div className="text-danger small mt-1 ms-1">{error}</div>}
+  </div>
+);
 
 export default function InformationPage() {
   const [form, setForm] = useState<InformationForm>(initialForm);
@@ -47,6 +101,10 @@ export default function InformationPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user types
+    if (errors[name as keyof InformationForm]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   // Step 1: Register and send OTP
@@ -72,7 +130,7 @@ export default function InformationPage() {
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
       console.log("Register response:", data);
-      setServerOtp(data.otp); // show OTP for testing
+      setServerOtp(data.otp);
       setUserId(data.userId);
       setOtpSent(true);
     } catch (err: any) {
@@ -104,29 +162,19 @@ export default function InformationPage() {
       console.log("OTP verified:", data);
       localStorage.setItem("cc_user", JSON.stringify({ userId, name: form.name }));
 
-      // ✅ Once verified, send user goal to backend profile
       await fetch("/api/auth/update-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,
           profile: {
-            endGoal: form.goal, // Mapping form 'goal' (text) to backend 'endGoal' (legacy name preference? or just field name)
-            // Correction: backend typically uses 'goal' or 'careerGoal', but plan said 'endGoal'. 
-            // Let's stick to 'goal' as per my previous thought, but 'endGoal' was in the plan.
-            // Actually, report.js compileProfile checks `user.goal || uProfile.goal`.
-            // The file currently has `endGoal: form.goal`. I should probably change it to `goal: form.goal` to match report.js 
-            // OR keep `endGoal` and let compileProfile find it? 
-            // report.js has: `goal: user.goal || ...` 
-            // AND `targetCountry`. 
-            // So I will send `goal` and `targetCountry`.
             goal: form.goal,
             targetCountry: form.target_country,
+            endGoal: form.goal,
           },
         }),
       });
 
-      // Navigate to psychometric test
       navigate("/psychometric/ria-sec", { state: { userId } });
     } catch (err: any) {
       console.error("Verify OTP error:", err);
@@ -137,129 +185,188 @@ export default function InformationPage() {
   }
 
   return (
-    <div className="container py-4">
-      <div className="row justify-content-center">
-        <div className="col-lg-6">
-          <div className="card shadow-sm p-4">
-            <h3 className="text-center mb-3">Student Information</h3>
+    <div className="modern-container d-flex flex-column justify-content-center align-items-center py-5 px-3">
 
-            {!otpSent ? (
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label className="form-label">Full Name</label>
-                  <input
-                    type="text"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card w-100 position-relative overflow-hidden"
+        style={{ maxWidth: '550px', padding: '0' }}
+      >
+        <div className="position-absolute top-0 start-0 w-100" style={{ height: '4px', background: '#f3f4f6' }}>
+          <motion.div
+            initial={{ width: '0%' }}
+            animate={{ width: otpSent ? '100%' : '50%' }}
+            className="h-100 bg-primary"
+          />
+        </div>
+
+        <div className="p-4 p-md-5">
+          <div className="text-center mb-5">
+            <h1 className="h3 fw-bold mb-2 font-heading">{otpSent ? "Verify Mobile" : "Student Profile"}</h1>
+            <p className="text-secondary small">
+              {otpSent
+                ? "Enter the code sent to your phone"
+                : "Help us personalize your career roadmap"}
+            </p>
+          </div>
+
+          {!otpSent ? (
+            <motion.form
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onSubmit={handleSubmit}
+            >
+              <div className="row g-2">
+                <div className="col-12">
+                  <InputGroup
+                    label="Full Name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    className={`form-control ${errors.name ? "is-invalid" : ""}`}
+                    error={errors.name}
+                    icon={User}
+                    placeholder="John Doe"
                   />
-                  {errors.name && <div className="invalid-feedback">{errors.name}</div>}
                 </div>
 
-                <div className="mb-3">
-                  <label className="form-label">Email</label>
-                  <input
-                    type="email"
+                <div className="col-12 col-md-6">
+                  <InputGroup
+                    label="Email Address"
                     name="email"
                     value={form.email}
                     onChange={handleChange}
-                    className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                    error={errors.email}
+                    icon={Mail}
+                    type="email"
+                    placeholder="john@example.com"
                   />
-                  {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                 </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Phone</label>
-                  <input
-                    type="text"
+                <div className="col-12 col-md-6">
+                  <InputGroup
+                    label="Phone Number"
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
-                    className={`form-control ${errors.phone ? "is-invalid" : ""}`}
+                    error={errors.phone}
+                    icon={Phone}
+                    placeholder="+91 99999 99999"
                   />
-                  {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
                 </div>
 
-                <div className="mb-3">
-                  <label className="form-label">Current Level</label>
-                  <select
+                <div className="col-12">
+                  <InputGroup
+                    label="Current Education Level"
                     name="class_status"
                     value={form.class_status}
                     onChange={handleChange}
-                    className={`form-select ${errors.class_status ? "is-invalid" : ""}`}
-                  >
-                    <option value="">Select</option>
-                    <option value="school">School Student</option>
-                    <option value="12th">12th</option>
-                    <option value="10th+diploma">10th + Diploma</option>
-                    <option value="ug">Undergraduate (UG)</option>
-                    <option value="ug+diploma">UG + Diploma</option>
-                    <option value="master">Master</option>
-                  </select>
-                  {errors.class_status && <div className="invalid-feedback">{errors.class_status}</div>}
+                    error={errors.class_status}
+                    icon={GraduationCap}
+                    options={[
+                      { val: "school", label: "School Student" },
+                      { val: "12th", label: "Class 12th" },
+                      { val: "10th+diploma", label: "10th + Diploma" },
+                      { val: "ug", label: "Undergraduate (UG)" },
+                      { val: "ug+diploma", label: "UG + Diploma" },
+                      { val: "master", label: "Masters / Postgrad" },
+                    ]}
+                  />
                 </div>
 
-                <div className="mb-3">
-                  <label className="form-label">Target Country</label>
-                  <input
-                    type="text"
+                <div className="col-12 col-md-6">
+                  <InputGroup
+                    label="Target Country"
                     name="target_country"
                     value={form.target_country}
                     onChange={handleChange}
-                    className={`form-control ${errors.target_country ? "is-invalid" : ""}`}
+                    error={errors.target_country}
+                    icon={Globe}
                     placeholder="e.g. USA, UK, India"
                   />
-                  {errors.target_country && <div className="invalid-feedback">{errors.target_country}</div>}
                 </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Your End Goal</label>
-                  <input
-                    type="text"
+                <div className="col-12 col-md-6">
+                  <InputGroup
+                    label="Dream Career Goal"
                     name="goal"
                     value={form.goal}
                     onChange={handleChange}
-                    className={`form-control ${errors.goal ? "is-invalid" : ""}`}
-                    placeholder="e.g. Software Engineer, Entrepreneur, Higher Studies"
-                  />
-                  {errors.goal && <div className="invalid-feedback">{errors.goal}</div>}
-                </div>
-
-                {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-
-                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                  {loading ? "Sending OTP..." : "Register & Get OTP"}
-                </button>
-              </form>
-            ) : (
-              <div>
-                <p className="text-center">
-                  OTP has been sent to <strong>{form.phone}</strong>. <br />
-                  (For testing: <b>{serverOtp}</b>)
-                </p>
-
-                <div className="mb-3">
-                  <label className="form-label">Enter OTP</label>
-                  <input
-                    type="text"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="form-control"
-                    placeholder="Enter the OTP"
+                    error={errors.goal}
+                    icon={Target}
+                    placeholder="e.g. Data Scientist"
                   />
                 </div>
-
-                {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-
-                <button onClick={handleVerifyOtp} className="btn btn-success w-100" disabled={verifying}>
-                  {verifying ? "Verifying..." : "Verify & Continue"}
-                </button>
               </div>
-            )}
-          </div>
+
+              {errorMessage && (
+                <div className="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger font-sm rounded-3 py-2 px-3 mb-4">
+                  {errorMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2 mt-2"
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="spin" size={20} /> : <>Next Step <ArrowRight size={20} /></>}
+              </button>
+            </motion.form>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-center"
+            >
+              <div className="mb-4 d-inline-flex justify-content-center align-items-center bg-primary bg-opacity-10 rounded-circle text-primary" style={{ width: '80px', height: '80px' }}>
+                <Smartphone size={32} />
+              </div>
+
+              <div className="mb-4">
+                <p className="mb-2 text-secondary">
+                  We sent a verification code to <br />
+                  <span className="fw-bold text-dark">{form.phone}</span>
+                </p>
+                {serverOtp && <span className="badge bg-secondary bg-opacity-10 text-secondary border">Dev Mode: {serverOtp}</span>}
+              </div>
+
+              <div className="mb-4 text-start">
+                <label className="form-label small fw-bold text-secondary text-center w-100">One-Time Password</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="modern-input text-center fw-bold fs-4 letter-spacing-2"
+                  style={{ letterSpacing: '0.5rem' }}
+                  placeholder="• • • • • •"
+                  maxLength={6}
+                  autoFocus
+                />
+              </div>
+
+              {errorMessage && (
+                <div className="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger font-sm rounded-3 py-2 px-3 mb-4">
+                  {errorMessage}
+                </div>
+              )}
+
+              <button
+                onClick={handleVerifyOtp}
+                className="btn-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                disabled={verifying}
+              >
+                {verifying ? <Loader2 className="spin" size={20} /> : <>Verify & Start Test <CheckCircle size={20} /></>}
+              </button>
+
+              <button
+                onClick={() => setOtpSent(false)}
+                className="btn-ghost mt-3 text-secondary small w-100"
+              >
+                Edit Phone Number
+              </button>
+            </motion.div>
+          )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
