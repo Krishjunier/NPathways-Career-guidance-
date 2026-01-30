@@ -2,11 +2,16 @@ const nodemailer = require('nodemailer');
 require("dotenv").config();
 
 // Create reusable transporter object using the default SMTP transport
-// Create reusable transporter object using explicit Gmail SMTP settings
+const { Resend } = require('resend');
+
+// Initialize Resend
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+// Keep Nodemailer as fallback (or for when Resend key is missing)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
+    port: 465, // SSL
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -25,10 +30,38 @@ const transporter = nodemailer.createTransport({
  */
 const sendOTPEmail = async (email, otp, name) => {
     try {
+        // Method 1: Try Resend API (HTTP - works on Render)
+        if (resend) {
+            try {
+                const { data, error } = await resend.emails.send({
+                    from: 'NPathways <onboarding@resend.dev>', // Default testing domain
+                    to: [email],
+                    subject: 'Your Login OTP - Career Counselling',
+                    html: `
+                    <div style="font-family: sans-serif; padding: 20px;">
+                        <h2>Hello ${name || 'User'},</h2>
+                        <p>Your OTP is:</p>
+                        <h1 style="color: #4F46E5; letter-spacing: 5px;">${otp}</h1>
+                        <p><small>Sent via Resend API</small></p>
+                    </div>
+                    `
+                });
+
+                if (error) {
+                    console.error('⚠️ Resend API Error:', error);
+                    // Fallthrough to Nodemailer if Resend fails (e.g. unverified email)
+                } else {
+                    console.log(`✅ OTP sent via Resend API: ${data.id}`);
+                    return true;
+                }
+            } catch (rErr) {
+                console.error('⚠️ Resend Exception:', rErr);
+            }
+        }
+
+        // Method 2: Fallback to Nodemailer (SMTP)
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.warn("⚠️  Email credentials missing in .env. Printing OTP to console.");
-            console.log(`[DEV] OTP for ${email}: ${otp}`);
-            return true; // Simulate success
+            throw new Error("No Email Credentials");
         }
 
         const mailOptions = {
@@ -46,27 +79,21 @@ const sendOTPEmail = async (email, otp, name) => {
                 
                 <p style="font-size: 14px; color: #666; line-height: 1.5;">This OTP is valid for <strong>5 minutes</strong>.<br>For security reasons, please do not share this code with anyone.</p>
                 
-                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                
                 <div style="text-align: center; font-size: 12px; color: #999;">
-                    <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} NPathways Global. All rights reserved.</p>
-                    <p style="margin: 5px 0;">Sent by Career Counselling Team <br> <a href="mailto:krishjr3010@gmail.com" style="color: #4F46E5; text-decoration: none;">krishjr3010@gmail.com</a></p>
+                    <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} NPathways Global</p>
                 </div>
             </div>
             `
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent: ${info.messageId}`);
+        console.log(`✅ Email sent via SMTP: ${info.messageId}`);
         return true;
 
     } catch (error) {
         console.error('❌ Email Service Error:', error.message);
-        if (error.response) {
-            console.error('SMTP Response:', error.response);
-        }
 
-        // Fallback: Use console log for OTP if email fails (Development/Rescue Mode)
+        // Fallback: Use console log for OTP
         console.warn("⚠️  Email failed. USING CONSOLE OTP TO BYPASS:");
         console.log(`[DEV OTP] For ${email}: ${otp}`);
         return true;
@@ -79,17 +106,43 @@ const sendOTPEmail = async (email, otp, name) => {
  */
 const sendCounsellingRequest = async (userData) => {
     try {
+        const { name, email, phone, status } = userData;
+        const recipient = process.env.EMAIL_USER || 'krishjr3010@gmail.com';
+
+        // Method 1: Try Resend API
+        if (resend) {
+            try {
+                const { data, error } = await resend.emails.send({
+                    from: 'NPathways Admin <onboarding@resend.dev>',
+                    to: [recipient], // Send to Admin
+                    subject: '🎯 New Free Counselling Request',
+                    html: `
+                    <div>
+                        <h2>New Request from ${name}</h2>
+                        <p>Email: ${email}</p>
+                        <p>Phone: ${phone}</p>
+                        <p>Status: ${status}</p>
+                        <p><small>Sent via Resend API</small></p>
+                    </div>
+                    `
+                });
+                if (!error) {
+                    console.log(`✅ Counselling request sent via Resend: ${data.id}`);
+                    return true;
+                }
+            } catch (rErr) { console.error(rErr); }
+        }
+
+        // Method 2: Nodemailer Fallback
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.warn("⚠️  Email credentials missing in .env. Logging counselling request to console.");
-            console.log(`[DEV] Counselling Request from:`, userData);
+            console.warn("⚠️  Email credentials missing. Logging to console.");
+            console.log(`[DEV] Counselling Request:`, userData);
             return true;
         }
 
-        const { name, email, phone, status } = userData;
-
         const mailOptions = {
             from: `"NPathways System" <${process.env.EMAIL_USER}>`,
-            to: 'krishjr3010@gmail.com',
+            to: recipient,
             subject: '🎯 New Free Counselling Request',
             html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff;">
@@ -126,8 +179,6 @@ const sendCounsellingRequest = async (userData) => {
                     <p style="margin: 0; color: #856404;"><strong>⏰ Action Required:</strong> Please reach out to this user within 24 hours for their free counselling session.</p>
                 </div>
                 
-                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                
                 <div style="text-align: center; font-size: 12px; color: #999;">
                     <p style="margin: 5px 0;">This is an automated notification from NPathways Dashboard</p>
                     <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} NPathways Global</p>
@@ -137,11 +188,11 @@ const sendCounsellingRequest = async (userData) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Counselling request email sent: ${info.messageId}`);
+        console.log(`✅ Counselling request email sent via SMTP: ${info.messageId}`);
         return true;
 
     } catch (err) {
-        console.error('❌ Counselling Request Email Error:', err);
+        console.error('❌ Counselling Request Email Error:', err.message);
         return false;
     }
 };
