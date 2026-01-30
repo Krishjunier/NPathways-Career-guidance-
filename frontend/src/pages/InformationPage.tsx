@@ -21,6 +21,9 @@ const initialForm: InformationForm = {
   target_country: "",
 };
 
+// Define API Base URL (Use Env Var or Default to Render Backend)
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://npathways-career-guidance.onrender.com";
+
 // UI Helper Component defined outside to prevent re-mount/focus loss
 const InputGroup = ({
   label,
@@ -117,7 +120,7 @@ export default function InformationPage() {
     setErrorMessage("");
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -153,7 +156,7 @@ export default function InformationPage() {
     setVerifying(true);
     setErrorMessage("");
     try {
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, otp }),
@@ -165,7 +168,7 @@ export default function InformationPage() {
       console.log("OTP verified:", data);
       localStorage.setItem("cc_user", JSON.stringify({ userId, name: form.name }));
 
-      await fetch("/api/auth/update-profile", {
+      await fetch(`${API_BASE_URL}/api/auth/update-profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
