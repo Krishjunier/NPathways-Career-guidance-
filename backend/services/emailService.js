@@ -2,14 +2,17 @@ const nodemailer = require('nodemailer');
 require("dotenv").config();
 
 // Create reusable transporter object using the default SMTP transport
+// Create reusable transporter object using explicit Gmail SMTP settings
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
-        user: process.env.EMAIL_USER, // e.g., krishjr3010@gmail.com
-        pass: process.env.EMAIL_PASS  // App Password e.g., ccpn pvgl njbt egpr
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     },
-    // Fast fail on connection issues (e.g. Render Free Tier blocks SMTP)
-    connectionTimeout: 5000, // 5 seconds
+    // Fast fail on connection issues
+    connectionTimeout: 5000,
     greetingTimeout: 5000,
     socketTimeout: 10000
 });
