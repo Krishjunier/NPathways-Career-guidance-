@@ -1,19 +1,19 @@
 const nodemailer = require('nodemailer');
-const axios = require('axios');
+const { Resend } = require('resend');
 require("dotenv").config();
 
-// Create reusable transporter object using the default SMTP transport
+// Initialize Resend
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-// Keep Nodemailer as fallback (or for when Resend key is missing)
+// Keep Nodemailer as fallback
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT || '465'),
-    secure: (process.env.EMAIL_PORT === '465'), // true for 465, false for 587
+    secure: (process.env.EMAIL_PORT === '465'),
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    // Fast fail on connection issues
     connectionTimeout: 5000,
     greetingTimeout: 5000,
     socketTimeout: 10000
@@ -27,31 +27,33 @@ const transporter = nodemailer.createTransport({
  */
 const sendOTPEmail = async (email, otp, name) => {
     try {
-        // Method 1: Netlify Function (Bypass Render Block)
-        if (process.env.NETLIFY_EMAIL_URL) {
+        // Method 1: Resend API (Works on Render)
+        if (resend) {
             try {
-                console.log('Using Netlify Function for Email...');
-                const response = await axios.post(process.env.NETLIFY_EMAIL_URL, {
-                    email,
+                const { data, error } = await resend.emails.send({
+                    from: 'NPathways <onboarding@resend.dev>',
+                    to: [email],
                     subject: 'Your Login OTP - Career Counselling',
                     html: `
                     <div style="font-family: sans-serif; padding: 20px;">
                         <h2>Hello ${name || 'User'},</h2>
                         <p>Your OTP is:</p>
                         <h1 style="color: #4F46E5;">${otp}</h1>
-                        <p><small>Sent via Netlify Function</small></p>
+                        <p><small>Sent via Resend API</small></p>
                     </div>
                     `
                 });
-                console.log(`✅ Email sent via Netlify: ${response.data.message}`);
-                return true;
-            } catch (netErr) {
-                console.error('⚠️ Netlify Email Failed:', netErr.response?.data || netErr.message);
-                // Fallthrough to local SMTP
+                if (!error) {
+                    console.log(`✅ OTP sent via Resend API: ${data.id}`);
+                    return true;
+                }
+                console.error('⚠️ Resend Error:', error);
+            } catch (rErr) {
+                console.error('⚠️ Resend Exception:', rErr);
             }
         }
 
-        // Method 2: Nodemailer (SMTP) - Local
+        // Method 2: Nodemailer (SMTP) - Fallback
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             throw new Error("No Email Credentials");
         }
@@ -84,7 +86,6 @@ const sendOTPEmail = async (email, otp, name) => {
 
     } catch (error) {
         console.error('❌ Email Failed (Likely Render Port Block):', error.message);
-        console.log('💡 TIP: Configure NETLIFY_EMAIL_URL in Render to bypass this');
 
         // Fallback: Use console log for OTP
         console.warn("⚠️  Switched to CONSOLE OTP (Dev Mode):");
