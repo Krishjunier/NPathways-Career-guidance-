@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Download, FileText, Lock, CheckCircle, Zap } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { ArrowLeft, Download, FileText, Lock, Zap } from 'lucide-react';
 
 type ExportFile = {
     id: string;

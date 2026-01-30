@@ -25,13 +25,13 @@ export default function AptitudePage() {
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [showPage, setShowPage] = useState(false);
+
 
     const hasLoadedRef = useRef(false);
     const questionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     useEffect(() => {
-        setTimeout(() => setShowPage(true), 100);
+
 
         if (!userId) {
             navigate("/information");
