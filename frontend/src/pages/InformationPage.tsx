@@ -44,11 +44,12 @@ const InputGroup = ({
   options?: { val: string, label: string }[]
 }) => (
   <div className="mb-4">
-    <label className="form-label small fw-bold text-secondary mb-2">{label}</label>
+    <label htmlFor={name} className="form-label small fw-bold text-secondary mb-2">{label}</label>
     <div className="position-relative">
       <Icon className="position-absolute top-50 translate-middle-y text-secondary opacity-50" style={{ left: '16px' }} size={18} />
       {options ? (
         <select
+          id={name}
           name={name}
           value={value}
           onChange={onChange}
@@ -60,6 +61,7 @@ const InputGroup = ({
         </select>
       ) : (
         <input
+          id={name}
           type={type}
           name={name}
           value={value}
