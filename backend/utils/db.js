@@ -9,19 +9,21 @@ const connectToDatabase = async () => {
     return mongoose.connection;
   }
 
-  try {
-    const dbUri = process.env.MONGODB_URI || 'mongodb+srv://gk5139272_db_user:WdcanhvNZbGy9Rb1@cluster0.k05al8h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-
-    // Connect to MongoDB
-    await mongoose.connect(dbUri);
-
-    isConnected = true;
-    console.log('[DB] Connected to MongoDB via Mongoose');
-    return mongoose.connection;
-  } catch (error) {
-    console.error('[DB] Connection failed:', error);
-    throw error;
+  const dbUri = process.env.MONGODB_URI;
+  if (!dbUri) {
+    throw new Error("MONGODB_URI is not defined in environment variables");
   }
+
+  // Connect to MongoDB
+  await mongoose.connect(dbUri);
+
+  isConnected = true;
+  console.log('[DB] Connected to MongoDB via Mongoose');
+  return mongoose.connection;
+} catch (error) {
+  console.error('[DB] Connection failed:', error);
+  throw error;
+}
 };
 
 const getDb = () => {
