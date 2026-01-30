@@ -1,0 +1,445 @@
+/**
+ * OTP Troubleshooting UI Component Styles
+ */
+
+.otp-troubleshooting {
+  position: relative;
+  margin-top: 20px;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 8px;
+  border: 1px solid;
+  margin-bottom: 16px;
+  font-size: 14px;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  &.alert-warning {
+    background-color: #fff3e0;
+    border-color: #ffb74d;
+    color: #e65100;
+
+    strong {
+      color: #e65100;
+    }
+  }
+
+  &.alert-danger {
+    background-color: #ffebee;
+    border-color: #ef5350;
+    color: #c62828;
+
+    strong {
+      color: #c62828;
+    }
+  }
+}
+
+/* Troubleshooting Section */
+.troubleshooting-section {
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px;
+
+  h5 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  > p {
+    margin: 0 0 12px 0;
+    color: #666;
+  }
+}
+
+/* Last Sent Info */
+.last-sent-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+
+  small {
+    font-size: 12px;
+    line-height: 1.4;
+
+    strong {
+      font-weight: 600;
+      color: #333;
+    }
+  }
+}
+
+/* Action Buttons Grid */
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+
+  @media (min-width: 576px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.action-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 12px 8px;
+  background: white;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 90px;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    border-color: #1976d2;
+    background: #f5f7fa;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f5f5f5;
+  }
+
+  .btn-icon {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .btn-content {
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .btn-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+
+  .btn-hint {
+    font-size: 10px;
+    color: #999;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-cooldown {
+    font-size: 10px;
+    color: #ff9800;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  &.resend-btn {
+    border-color: #2196f3;
+
+    &:hover:not(:disabled) {
+      border-color: #1976d2;
+      background: #e3f2fd;
+    }
+  }
+
+  &.call-btn {
+    border-color: #4caf50;
+
+    &:hover:not(:disabled) {
+      border-color: #388e3c;
+      background: #e8f5e9;
+    }
+  }
+
+  &.change-btn {
+    border-color: #ff9800;
+
+    &:hover:not(:disabled) {
+      border-color: #f57c00;
+      background: #fff3e0;
+    }
+  }
+
+  &.support-btn {
+    border-color: #f44336;
+  }
+
+  &.support-btn:hover:not(:disabled) {
+    border-color: #d32f2f;
+    background: #ffebee;
+  }
+}
+
+.action-btn .cooldown-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff9800;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Report Issue Link */
+.report-issue-link {
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 12px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s;
+
+  &:hover:not(:disabled) {
+    color: #1565c0;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Report Form */
+.report-form {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+
+  h6 {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  > p {
+    margin: 0 0 12px 0;
+  }
+
+  .form-group {
+    margin-bottom: 8px;
+
+    &:last-of-type {
+      margin-bottom: 12px;
+    }
+  }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+  }
+
+  .form-control {
+    font-size: 12px;
+    border-radius: 4px;
+
+    &:focus {
+      border-color: #1976d2;
+      box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
+    }
+  }
+
+  .btn {
+    width: 100%;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 4px;
+  }
+}
+
+/* Delivery Status Indicator */
+.delivery-status-indicator {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  .status-icon {
+    font-size: 14px;
+  }
+
+  .status-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  &.status-pending {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
+
+  &.status-sent {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.status-delivered {
+    background: #e8f5e9;
+    color: #1b5e20;
+  }
+
+  &.status-failed {
+    background: #ffebee;
+    color: #d32f2f;
+  }
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  backdrop-filter: blur(1px);
+  z-index: 10;
+
+  .spinner-border-sm {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .troubleshooting-section {
+    padding: 12px;
+  }
+
+  .action-buttons {
+    gap: 8px;
+  }
+
+  .action-btn {
+    min-height: 80px;
+    padding: 10px 6px;
+
+    .btn-icon {
+      font-size: 24px;
+    }
+
+    .btn-label {
+      font-size: 11px;
+    }
+  }
+
+  .last-sent-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-btn {
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-start;
+    min-height: auto;
+    padding: 10px;
+
+    .btn-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .btn-content {
+      text-align: left;
+    }
+
+    .btn-hint {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,117 @@
+.chat-container-solo {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+  position: relative;
+}
+
+.chat-header-solo {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.chat-title-solo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #8a2be2 0%, #5e9cef 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+  text-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+}
+
+.chat-subtitle-solo {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.progress-bar-solo {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.progress-label-solo {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-track {
+  background: rgba(138, 43, 226, 0.2);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill-solo {
+  height: 100%;
+  background: linear-gradient(90deg, #8a2be2 0%, #5e9cef 100%);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+  position: relative;
+}
+
+.progress-fill-solo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.input-container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-top: 2px solid rgba(138, 43, 226, 0.3);
+  padding: 16px;
+}
+
+.progress-percent {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.messages-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .chat-title-solo {
+    font-size: 1.4rem;
+  }
+  
+  .chat-subtitle-solo {
+    font-size: 0.85rem;
+  }
+}

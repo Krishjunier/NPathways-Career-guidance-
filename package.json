@@ -1,0 +1,18 @@
+{
+  "name": "career-counselling-web-app",
+  "version": "1.1.0",
+  "description": "AI-powered Career Counselling Platform",
+  "private": true,
+  "scripts": {
+    "start": "echo 'Please run backend and frontend separately or use concurrently'",
+    "install-all": "npm install --prefix backend && npm install --prefix frontend",
+    "backend": "npm start --prefix backend",
+    "frontend": "npm start --prefix frontend"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,0 +1,54 @@
+/* Custom theme overrides */
+:root {
+    --brand-blue: #0d6efd;
+    --accent-teal: #2aa6a6; /* teal from screenshot bar */
+    --accent-pink: #ff4f87;
+    --text-dark: #1d1d1f;
+  }
+  
+  body {
+    background-color: #f8f9fa;
+    color: var(--text-dark);
+  }
+  
+  /* Chat container - wider for portfolio/reports */
+  .chat-shell {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Chat scroll behavior */
+  .chat-scroll {
+    scroll-behavior: smooth;
+  }
+  
+  /* Message rails (colored vertical line to the left of bubbles) */
+  .msg-rail {
+    width: 3px;
+    border-radius: 3px;
+    margin-right: .5rem;
+  }
+  .msg-rail-bot {
+    background: var(--accent-teal);
+  }
+  .msg-rail-user {
+    background: var(--accent-pink);
+  }
+  
+  /* Option pill buttons */
+  .btn-pill {
+    border-radius: 9999px !important;
+    padding: .375rem .75rem;
+  }
+  
+  /* Rounded input pill */
+  .input-pill {
+    border-radius: 9999px !important;
+  }
+  
+  /* Header brand tweak */
+  .app-header {
+    background: #111;
+    color: #fff;
+  }
+  

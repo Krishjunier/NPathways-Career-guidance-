@@ -1,0 +1,40 @@
+{
+  "name": "career-counselling-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Career Counselling Web App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-deprecation server.js",
+    "dev": "nodemon --no-deprecation server.js"
+  },
+  "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.12.2",
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^1.20.2",
+    "bootstrap": "^5.3.8",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "groq-sdk": "^0.37.0",
+    "helmet": "^8.1.0",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "jspdf": "^2.5.1",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.0.2",
+    "morgan": "^1.10.1",
+    "nodemailer": "^7.0.13",
+    "react-router-dom": "^7.9.2",
+    "resend": "^6.6.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
