@@ -24,7 +24,7 @@ export default function BasicDownloadsPage({ userId }: Props) {
             setLoading(true);
             try {
                 const encodedUserId = encodeURIComponent(userId);
-                const res = await fetch(`http://localhost:5000/api/export/files/${encodedUserId}`);
+                const res = await fetch(`https://npathways-career-guidance.onrender.com/api/export/files/${encodedUserId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setFiles(Array.isArray(data) ? data : data.files ?? []);
@@ -43,7 +43,7 @@ export default function BasicDownloadsPage({ userId }: Props) {
     async function handleDownload(file: ExportFile) {
         setDownloading(file.id);
         try {
-            const res = await fetch(`http://localhost:5000/api/export/file/${encodeURIComponent(file.id)}`);
+            const res = await fetch(`https://npathways-career-guidance.onrender.com/api/export/file/${encodeURIComponent(file.id)}`);
             if (res.ok) {
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -65,7 +65,7 @@ export default function BasicDownloadsPage({ userId }: Props) {
     async function handleGeneratePDF() {
         setDownloading('generate');
         try {
-            window.open(`http://localhost:5000/api/portfolio/generate/${userId}`, "_blank");
+            window.open(`https://npathways-career-guidance.onrender.com/api/portfolio/generate/${userId}`, "_blank");
             setTimeout(() => setDownloading(null), 3000);
         } catch (e) {
             setDownloading(null);

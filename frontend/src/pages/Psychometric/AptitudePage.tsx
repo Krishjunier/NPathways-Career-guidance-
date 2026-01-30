@@ -45,7 +45,7 @@ export default function AptitudePage() {
             setError(null);
             try {
                 // Fetching 'intelligence' questions as they map to aptitude (logical, math, spatial)
-                const res = await fetch("http://localhost:5000/api/test/questions?type=intelligence");
+                const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=intelligence");
                 if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
                 const data: any = await res.json();
@@ -137,7 +137,7 @@ export default function AptitudePage() {
                 completed: true,
             };
 
-            const res = await fetch("http://localhost:5000/api/test/submit", {
+            const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

@@ -34,7 +34,7 @@ export default function CompletionPage() {
     setCounselingError(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/counseling/request', {
+      const response = await fetch('https://npathways-career-guidance.onrender.com/api/counseling/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -57,14 +57,14 @@ export default function CompletionPage() {
   const handleDownloadPdf = () => {
     if (!userId) return;
     setDownloadingPdf(true);
-    window.open(`http://localhost:5000/api/portfolio/generate/${userId}`, '_blank');
+    window.open(`https://npathways-career-guidance.onrender.com/api/portfolio/generate/${userId}`, '_blank');
     setTimeout(() => setDownloadingPdf(false), 2000);
   };
 
   const handleDownloadExcel = () => {
     if (!userId) return;
     setDownloadingExcel(true);
-    window.open(`http://localhost:5000/api/export/excel/${userId}`, '_blank');
+    window.open(`https://npathways-career-guidance.onrender.com/api/export/excel/${userId}`, '_blank');
     setTimeout(() => setDownloadingExcel(false), 2000);
   };
 

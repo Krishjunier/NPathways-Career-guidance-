@@ -27,7 +27,7 @@ export default function PremiumDownloadsPage({ userId }: Props) {
             setLoading(true);
             try {
                 const encodedUserId = encodeURIComponent(userId ?? "");
-                const res = await fetch(`http://localhost:5000/api/export/files/${encodedUserId}`);
+                const res = await fetch(`https://npathways-career-guidance.onrender.com/api/export/files/${encodedUserId}`);
 
                 if (!res.ok) {
                     if (res.status === 404) {
@@ -57,7 +57,7 @@ export default function PremiumDownloadsPage({ userId }: Props) {
                 window.open(file.url, "_blank");
                 return;
             }
-            const res = await fetch(`http://localhost:5000/api/export/file/${encodeURIComponent(file.id)}`);
+            const res = await fetch(`https://npathways-career-guidance.onrender.com/api/export/file/${encodeURIComponent(file.id)}`);
             if (!res.ok) throw new Error(`Download failed (${res.status})`);
             const blob = await res.blob();
             const blobUrl = URL.createObjectURL(blob);
@@ -80,7 +80,7 @@ export default function PremiumDownloadsPage({ userId }: Props) {
         if (!window.confirm("Delete this file permanently?")) return;
         setDeletingId(fileId);
         try {
-            const res = await fetch(`http://localhost:5000/api/export/files/${encodeURIComponent(fileId)}`, {
+            const res = await fetch(`https://npathways-career-guidance.onrender.com/api/export/files/${encodeURIComponent(fileId)}`, {
                 method: "DELETE"
             });
             if (!res.ok) throw new Error(`Delete failed (${res.status})`);
@@ -97,7 +97,7 @@ export default function PremiumDownloadsPage({ userId }: Props) {
         if (!userId) return;
         setDownloading("generate-pdf");
         try {
-            window.open(`http://localhost:5000/api/portfolio/generate/${userId}`, "_blank");
+            window.open(`https://npathways-career-guidance.onrender.com/api/portfolio/generate/${userId}`, "_blank");
             setTimeout(() => {
                 setDownloading(null);
             }, 3000);
@@ -112,7 +112,7 @@ export default function PremiumDownloadsPage({ userId }: Props) {
         if (!userId) return;
         setDownloading("refresh");
         try {
-            await fetch(`http://localhost:5000/api/portfolio/refresh/${userId}`, { method: "POST" });
+            await fetch(`https://npathways-career-guidance.onrender.com/api/portfolio/refresh/${userId}`, { method: "POST" });
             window.location.reload();
         } catch (err) {
             console.error("Refresh error:", err);

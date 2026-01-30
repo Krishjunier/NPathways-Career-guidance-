@@ -194,12 +194,12 @@ const ProfilePage: React.FC = () => {
 
   const handleDownloadPDF = () => {
     if (!userId) return;
-    window.open(`http://localhost:5000/api/portfolio/generate/${userId}`, '_blank');
+    window.open(`https://npathways-career-guidance.onrender.com/api/portfolio/generate/${userId}`, '_blank');
   };
 
   const handleDownloadExcel = () => {
     if (!userId) return;
-    window.open(`http://localhost:5000/api/export/excel/${userId}`, '_blank');
+    window.open(`https://npathways-career-guidance.onrender.com/api/export/excel/${userId}`, '_blank');
   };
 
   const handleCopyShareLink = async () => {

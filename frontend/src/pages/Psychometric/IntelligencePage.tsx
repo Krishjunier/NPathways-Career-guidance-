@@ -45,7 +45,7 @@ export default function IntelligencePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("http://localhost:5000/api/test/questions?type=intelligence");
+        const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=intelligence");
         if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
         const data: any = await res.json();
@@ -138,7 +138,7 @@ export default function IntelligencePage() {
         completed: true,
       };
 
-      const res = await fetch("http://localhost:5000/api/test/submit", {
+      const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

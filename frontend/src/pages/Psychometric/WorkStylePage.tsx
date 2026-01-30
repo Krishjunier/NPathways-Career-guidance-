@@ -108,7 +108,7 @@ export default function WorkStylePage() {
 
             await apiService.submitTestAnswers(userId!, payload.answers as any);
 
-            const res = await fetch("http://localhost:5000/api/test/submit", {
+            const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

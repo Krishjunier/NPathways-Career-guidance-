@@ -113,7 +113,7 @@ const PortfolioPage: React.FC = () => {
   }, [userId]);
 
   const handleDownloadPDF = () => {
-    if (userId) window.open(`http://localhost:5000/api/portfolio/generate/${userId}`, '_blank');
+    if (userId) window.open(`https://npathways-career-guidance.onrender.com/api/portfolio/generate/${userId}`, '_blank');
   };
 
   const handleNewConversation = () => {
