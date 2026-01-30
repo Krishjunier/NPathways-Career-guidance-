@@ -41,6 +41,11 @@ loadRoute("./routes/chat", "/api/chat");
 loadRoute("./routes/scoring", "/api/scoring");
 loadRoute("./routes/payment", "/api/payment");
 
+// Root route for sanity check
+app.get("/", (req, res) => {
+  res.send("<h2>Career Counselling API is Running 🚀</h2><p>Use /api/health to check status.</p>");
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ message: "Career Counselling API is running!", status: "OK" });
 });
