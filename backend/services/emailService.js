@@ -91,10 +91,11 @@ const sendOTPEmail = async (email, otp, name) => {
         return true;
 
     } catch (error) {
-        console.error('❌ Email Service Error:', error.message);
+        console.error('❌ Email Failed (Likely Render Port Block):', error.message);
+        console.log('💡 TIP: Add RESEND_API_KEY to Render Environment Variables to enable HTTP emails.');
 
         // Fallback: Use console log for OTP
-        console.warn("⚠️  Email failed. USING CONSOLE OTP TO BYPASS:");
+        console.warn("⚠️  Switched to CONSOLE OTP (Dev Mode):");
         console.log(`[DEV OTP] For ${email}: ${otp}`);
         return true;
     }
