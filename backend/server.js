@@ -8,6 +8,7 @@ const helmet = require("helmet");
 const { connectToDatabase } = require("./utils/db");
 
 const app = express();
+app.set('trust proxy', 1); // Enable proxy trust for Render/Heroku
 const PORT = process.env.PORT || 5000;
 
 // Middleware
