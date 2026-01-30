@@ -134,6 +134,30 @@ export default function InformationPage() {
       console.log("Register response:", data);
       setServerOtp(data.otp);
       setUserId(data.userId);
+
+      // Trigger Email Sending from Frontend (Bypassing Render SMTP block)
+      try {
+        await fetch("/.netlify/functions/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: form.email,
+            subject: "Your Login OTP - Career Counselling",
+            html: `
+              <div style="font-family: sans-serif; padding: 20px;">
+                  <h2>Hello ${form.name},</h2>
+                  <p>Your OTP is:</p>
+                  <h1 style="color: #4F46E5;">${data.otp}</h1>
+                  <p><small>Sent via Netlify Function</small></p>
+              </div>
+            `
+          })
+        });
+        console.log("Email sent via Netlify Function");
+      } catch (emailErr) {
+        console.error("Failed to trigger email from frontend:", emailErr);
+      }
+
       setOtpSent(true);
     } catch (err: any) {
       console.error("Register error:", err);
