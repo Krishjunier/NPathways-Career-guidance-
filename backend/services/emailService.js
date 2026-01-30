@@ -2,10 +2,7 @@ const nodemailer = require('nodemailer');
 require("dotenv").config();
 
 // Create reusable transporter object using the default SMTP transport
-const { Resend } = require('resend');
-
-// Initialize Resend
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Create reusable transporter object using the default SMTP transport
 
 // Keep Nodemailer as fallback (or for when Resend key is missing)
 const transporter = nodemailer.createTransport({
@@ -30,36 +27,7 @@ const transporter = nodemailer.createTransport({
  */
 const sendOTPEmail = async (email, otp, name) => {
     try {
-        // Method 1: Try Resend API (HTTP - works on Render)
-        if (resend) {
-            try {
-                const { data, error } = await resend.emails.send({
-                    from: 'NPathways <onboarding@resend.dev>', // Default testing domain
-                    to: [email],
-                    subject: 'Your Login OTP - Career Counselling',
-                    html: `
-                    <div style="font-family: sans-serif; padding: 20px;">
-                        <h2>Hello ${name || 'User'},</h2>
-                        <p>Your OTP is:</p>
-                        <h1 style="color: #4F46E5; letter-spacing: 5px;">${otp}</h1>
-                        <p><small>Sent via Resend API</small></p>
-                    </div>
-                    `
-                });
-
-                if (error) {
-                    console.error('⚠️ Resend API Error:', error);
-                    // Fallthrough to Nodemailer if Resend fails (e.g. unverified email)
-                } else {
-                    console.log(`✅ OTP sent via Resend API: ${data.id}`);
-                    return true;
-                }
-            } catch (rErr) {
-                console.error('⚠️ Resend Exception:', rErr);
-            }
-        }
-
-        // Method 2: Fallback to Nodemailer (SMTP)
+        // Method 1: Nodemailer (SMTP) - User Preferred
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             throw new Error("No Email Credentials");
         }
@@ -110,31 +78,7 @@ const sendCounsellingRequest = async (userData) => {
         const { name, email, phone, status } = userData;
         const recipient = process.env.EMAIL_USER || 'krishjr3010@gmail.com';
 
-        // Method 1: Try Resend API
-        if (resend) {
-            try {
-                const { data, error } = await resend.emails.send({
-                    from: 'NPathways Admin <onboarding@resend.dev>',
-                    to: [recipient], // Send to Admin
-                    subject: '🎯 New Free Counselling Request',
-                    html: `
-                    <div>
-                        <h2>New Request from ${name}</h2>
-                        <p>Email: ${email}</p>
-                        <p>Phone: ${phone}</p>
-                        <p>Status: ${status}</p>
-                        <p><small>Sent via Resend API</small></p>
-                    </div>
-                    `
-                });
-                if (!error) {
-                    console.log(`✅ Counselling request sent via Resend: ${data.id}`);
-                    return true;
-                }
-            } catch (rErr) { console.error(rErr); }
-        }
-
-        // Method 2: Nodemailer Fallback
+        // Method 1: Nodemailer (SMTP) - User Preferred
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             console.warn("⚠️  Email credentials missing. Logging to console.");
             console.log(`[DEV] Counselling Request:`, userData);
