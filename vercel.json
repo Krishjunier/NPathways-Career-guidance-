@@ -5,11 +5,7 @@
     "outputDirectory": "frontend/build",
     "routes": [
         {
-            "src": "/api/(.*)",
-            "dest": "/api/index.js"
-        },
-        {
-            "src": "/(.*)",
+            "src": "/[^.]+",
             "dest": "/index.html"
         }
     ]
