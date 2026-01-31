@@ -1,7 +1,7 @@
 [build]
   base = "" 
-  publish = "frontend/build"
-  command = "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend"
+  publish = "backend/public"
+  command = "npm install && npm install --prefix backend"
   functions = "netlify/functions"
 
 [functions]
