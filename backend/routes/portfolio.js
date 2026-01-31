@@ -202,8 +202,12 @@ router.get("/data/:userId", async (req, res) => {
         // Use whatever profile data we have
         const profileForAI = compileProfile(user, testResponse || {});
 
-        console.log(`[Portfolio] Generating AI suggestion for ${user.email} with ${allAnswers.length} answers...`);
-        const newSuggestion = await getAICareerSuggestion(profileForAI, allAnswers);
+        // Determine plan for AI context
+        const userPlan = user.purchasedBundles?.includes('compass_bundle') ? 'compass' :
+          user.purchasedBundles?.includes('clarity_bundle') ? 'clarity' : 'free';
+
+        console.log(`[Portfolio] Generating AI suggestion for ${user.email} with ${allAnswers.length} answers... (Plan: ${userPlan})`);
+        const newSuggestion = await getAICareerSuggestion(profileForAI, allAnswers, null, userPlan);
 
         if (newSuggestion) {
           if (testResponse) {
@@ -303,6 +307,9 @@ router.get("/data/:userId", async (req, res) => {
       skills: Array.isArray(careerSuggestion.skills) ? careerSuggestion.skills : [],
       projects: Array.isArray(careerSuggestion.projects) ? careerSuggestion.projects : [],
       generatedAt: new Date(),
+      purchasedBundles: user.purchasedBundles || [],
+      plan: user.purchasedBundles?.includes('compass_bundle') ? 'compass' :
+        user.purchasedBundles?.includes('clarity_bundle') ? 'clarity' : 'free'
     };
 
     res.json({

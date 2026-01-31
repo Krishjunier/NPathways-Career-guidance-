@@ -45,7 +45,8 @@ export default function IntelligencePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=intelligence");
+        const questionsUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/questions?type=personality`;
+        const res = await fetch(questionsUrl);
         if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
         const data: any = await res.json();
@@ -138,7 +139,8 @@ export default function IntelligencePage() {
         completed: true,
       };
 
-      const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
+      const submitUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/submit`;
+      const res = await fetch(submitUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -149,7 +151,7 @@ export default function IntelligencePage() {
         throw new Error(txt || `Submission failed (${res.status})`);
       }
 
-      navigate("/psychometric/emotional", { state: { userId } });
+      navigate("/assessment-transition", { state: { userId, completedTestId: 'intelligence' } });
     } catch (err: any) {
       console.error("IntelligencePage submit error:", err);
       setError(err?.message || "Failed to submit answers. Please try again.");

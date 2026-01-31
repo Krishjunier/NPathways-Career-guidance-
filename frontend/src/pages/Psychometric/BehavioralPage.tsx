@@ -42,7 +42,8 @@ export default function BehavioralPage() {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=behavioral");
+                const questionsUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/questions?type=behavioral`;
+                const res = await fetch(questionsUrl);
                 if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
                 const data: any = await res.json();
@@ -134,7 +135,8 @@ export default function BehavioralPage() {
                 completed: true,
             };
 
-            const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
+            const submitUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/submit`;
+            const res = await fetch(submitUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -146,7 +148,7 @@ export default function BehavioralPage() {
             }
 
             // Mark Behavioral as complete if you track it separately, otherwise generic tests_completed
-            navigate("/dashboard", { state: { userId, newlyCompleted: true } });
+            navigate("/assessment-transition", { state: { userId, completedTestId: 'behavioral' } });
         } catch (err: any) {
             console.error("BehavioralPage submit error:", err);
             setError(err?.message || "Failed to submit answers. Please try again.");
@@ -282,7 +284,7 @@ export default function BehavioralPage() {
                                 <button
                                     type="button"
                                     className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2"
-                                    onClick={() => navigate("/dashboard", { state: { userId } })}
+                                    onClick={() => navigate("/assessment-transition")}
                                     disabled={submitting}
                                 >
                                     <ArrowLeft size={18} /> Cancel

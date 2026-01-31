@@ -42,7 +42,8 @@ export default function EmotionalPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=emotional");
+        const questionsUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/questions?type=emotional`;
+        const res = await fetch(questionsUrl);
         if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
         const data: any = await res.json();
@@ -134,7 +135,8 @@ export default function EmotionalPage() {
         completed: true,
       };
 
-      const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
+      const submitUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/submit`;
+      const res = await fetch(submitUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -146,7 +148,7 @@ export default function EmotionalPage() {
       }
 
       localStorage.setItem('tests_completed', 'true');
-      navigate("/dashboard", { state: { userId, newlyCompleted: true } });
+      navigate("/assessment-transition", { state: { userId, completedTestId: 'emotional' } });
     } catch (err: any) {
       console.error("EmotionalPage submit error:", err);
       setError(err?.message || "Failed to submit answers. Please try again.");

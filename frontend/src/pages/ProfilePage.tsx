@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import ReportCard from '../components/ReportCard';
-import { ArrowLeft, Download, FileText, Gift, RefreshCw, Copy, ExternalLink, Briefcase, Award, GraduationCap, BookOpen } from 'lucide-react';
-
-
+import { ArrowLeft, Download, FileText, Gift, RefreshCw, Copy, ExternalLink, Briefcase, Award, GraduationCap, BookOpen, Zap } from 'lucide-react';
 
 interface ExamScore {
   exam: string;
@@ -17,7 +15,7 @@ interface Project {
 }
 
 /**
- * Flexible report shape â€” keep an index signature so we can store any backend fields
+ * Flexible report shape — keep an index signature so we can store any backend fields
  * without causing TypeScript errors when the backend shape differs from our expectations.
  */
 interface ReportShape {
@@ -36,12 +34,12 @@ interface ReportShape {
   skills?: string[];
   projects?: Project[];
   generatedAt?: string;
+  plan?: string;
   [key: string]: any;
 }
 
 const ProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
-  // navigate removed (unused)
 
   const storageKey = userId ? `careerReport:${userId}` : '';
 
@@ -51,51 +49,34 @@ const ProfilePage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
+  // Initial load effect
   useEffect(() => {
-    const fetchData = async (useCache = true) => {
+    const fetchData = async () => {
       if (!userId) return;
-      // aggressively clear cache to remove stale data
-      if (userId) {
-        try {
-          localStorage.removeItem(`careerReport:${userId}`);
-        } catch { }
-      }
+
+      // Clear cache for fresh data on mount
+      try {
+        localStorage.removeItem(`careerReport:${userId}`);
+      } catch { }
 
       setError('');
       setLoading(true);
-
-      // try cache first - DISABLED to fix persistent default data
-      // if (useCache && storageKey) {
-      //   const cached = localStorage.getItem(storageKey);
-      //   if (cached) {
-      //     try {
-      //       const parsed = JSON.parse(cached) as ReportShape;
-      //       setReport(parsed);
-      //     } catch {
-      //       // ignore parse error and continue to fetch
-      //     } finally {
-      //       setLoading(false);
-      //     }
-      //   }
-      // }
 
       try {
         const [reportResponse] = await Promise.all([
           apiService.getCareerReport(userId),
         ]);
 
-        // treat the backend report as `any` when reading optional fields so TS doesn't complain
         const rawReport = (reportResponse.report || {}) as any;
 
         const normalizedReport: ReportShape = {
-          // spread whatever core report contains (may include career guidance, scores, etc.)
           ...(rawReport || {}),
-          // prefer explicit arrays from response.top-level if present, else fall back to rawReport fields
           colleges: reportResponse.colleges || rawReport.colleges || [],
           examScores: rawReport.examScores || [],
           skills: rawReport.skills || [],
           projects: rawReport.projects || [],
           generatedAt: rawReport.generatedAt || new Date().toISOString(),
+          plan: reportResponse.plan || rawReport.plan || 'free',
         };
 
         setReport(normalizedReport);
@@ -110,37 +91,30 @@ const ProfilePage: React.FC = () => {
       }
     };
 
-    fetchData(true);
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-  const fetchData = async (isInitialLoad = false) => {
+
+  // Re-fetch function for manual refresh (and internal re-use if needed)
+  const refetchData = async () => {
     if (!userId) return;
 
-    // Aggressively clear cache to remove stale data on initial load
-    if (isInitialLoad && userId) {
-      try {
-        localStorage.removeItem(`careerReport:${userId}`);
-      } catch { /* ignore */ }
-    }
-
-    if (isInitialLoad) setLoading(true);
-    setError('');
+    // We don't set loading=true here to avoid full page spinner during background refresh if desired,
+    // but the original code had complex logic. We'll simplify for robustness.
 
     try {
-      // 1. Fetch current report
       let [reportResponse] = await Promise.all([
         apiService.getCareerReport(userId),
       ]);
 
       let rawReport = (reportResponse.report || {}) as any;
 
-      // 2. CHECK IF DATA MISSING (Skills/Projects) -> FORCE REFRESH
+      // Check for missing data and auto-repair
       const isMissingData = !rawReport.skills?.length || !rawReport.projects?.length;
       if (isMissingData) {
         console.log("Missing Profile Data detected. Auto-refreshing...");
         const refreshRes = await apiService.refreshPortfolioData(userId);
         if (refreshRes && (refreshRes.portfolio?.careerSuggestion || refreshRes.portfolio?.skills || refreshRes.portfolio?.projects)) {
-          // Use the fresher data if available, or re-fetch report
           const [newReportResponse] = await Promise.all([
             apiService.getCareerReport(userId),
           ]);
@@ -156,35 +130,28 @@ const ProfilePage: React.FC = () => {
         skills: rawReport.skills || [],
         projects: rawReport.projects || [],
         generatedAt: rawReport.generatedAt || new Date().toISOString(),
+        plan: reportResponse.plan || rawReport.plan || 'free',
       };
 
       setReport(normalizedReport);
 
       try {
         if (storageKey) localStorage.setItem(storageKey, JSON.stringify(normalizedReport));
-      } catch { /* ignore */ }
+      } catch { }
+
     } catch (err) {
       console.error(err);
       setError('Failed to load profile data');
-    } finally {
-      if (isInitialLoad) setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
 
   const handleRefresh = async () => {
     if (!userId) return;
     setRefreshing(true);
     setError('');
     try {
-      // Regenerate AI data first to get latest projects/colleges
       await apiService.refreshPortfolioData(userId);
-      // Then fetch the updated report
-      await fetchData(false); // Pass false as it's not an initial load
+      await refetchData();
     } catch (err) {
       setError('Failed to refresh profile data');
     } finally {
@@ -224,8 +191,6 @@ const ProfilePage: React.FC = () => {
     link.remove();
   };
 
-
-
   const handleDownloadCollegesCSV = () => {
     if (!report || !report.colleges || report.colleges.length === 0) {
       alert('No colleges to download.');
@@ -245,8 +210,6 @@ const ProfilePage: React.FC = () => {
     report.examScores.forEach((e: ExamScore) => rows.push([e.exam, e.score]));
     downloadCSV(rows, `exam-scores-${userId || 'profile'}.csv`);
   };
-
-
 
   if (loading) {
     return (
@@ -293,6 +256,28 @@ const ProfilePage: React.FC = () => {
               <h2 className="h3 fw-bold mb-1">{report.personalInfo?.name || '—'}</h2>
               <div className="text-primary fw-medium mb-4">{report.personalInfo?.status || 'Student'}</div>
 
+              {/* SUBSCRIPTION BADGE */}
+              <div className="mb-4">
+                {report.plan === 'compass' && (
+                  <div className="badge bg-warning text-dark border border-warning px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2">
+                    <Award size={14} /> Compass Subscriber
+                  </div>
+                )}
+                {report.plan === 'clarity' && (
+                  <div className="badge bg-primary text-white border border-primary px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2">
+                    <Zap size={14} /> Clarity Subscriber
+                  </div>
+                )}
+                {(report.plan === 'free' || !report.plan) && (
+                  <div className="d-flex flex-column align-items-center gap-2">
+                    <span className="badge bg-secondary bg-opacity-10 text-secondary border px-3 py-1 rounded-pill">Free Plan</span>
+                    <Link to="/select-plan" className="btn btn-sm btn-outline-primary rounded-pill px-4">
+                      Upgrade Plan
+                    </Link>
+                  </div>
+                )}
+              </div>
+
               <div className="d-flex flex-column gap-3 text-start">
                 <div className="p-3 rounded border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
                   <div className="text-secondary small text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Email</div>
@@ -305,61 +290,7 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* 2. Skills & Projects (Sidebar) */}
-            <div className="glass-card p-4 mb-4">
-              <h3 className="h5 fw-bold mb-4 d-flex align-items-center gap-2">
-                <Gift size={20} className="text-info" /> Skills & Projects
-              </h3>
 
-              {/* Skills */}
-              <div className="mb-4">
-                <div className="text-secondary small text-uppercase fw-bold mb-2">Top Skills</div>
-                {report.skills && report.skills.length > 0 ? (
-                  <div className="d-flex flex-wrap gap-2">
-                    {report.skills.map((skill, i) => (
-                      <span key={i} className="badge bg-info bg-opacity-10 text-info px-2 py-1 rounded border border-info border-opacity-25">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-3 border rounded border-dashed" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                    <div className="text-secondary small mb-2">No skills generated</div>
-                    <button onClick={handleRefresh} className="btn-primary btn-sm d-inline-flex align-items-center gap-1">
-                      <RefreshCw size={12} className={refreshing ? 'spin' : ''} />
-                      {refreshing ? 'Generating...' : 'Generate Skills'}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Projects */}
-              <div>
-                <div className="text-secondary small text-uppercase fw-bold mb-2">Real-World Projects</div>
-                {report.projects && report.projects.length > 0 ? (
-                  <div className="d-flex flex-column gap-2">
-                    {report.projects.map((p, i) => (
-                      <div key={i} className="d-flex align-items-center justify-content-between p-2 rounded border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                        <span className="small fw-medium text-truncate" style={{ maxWidth: '80%' }}>{p.title || `Project ${i + 1}`}</span>
-                        {p.link && (
-                          <a href={p.link} target="_blank" rel="noreferrer" className="text-primary">
-                            <ExternalLink size={14} />
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-3 border rounded border-dashed" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                    <div className="text-secondary small mb-2">No projects generated</div>
-                    <button onClick={handleRefresh} className="btn-primary btn-sm d-inline-flex align-items-center gap-1">
-                      <RefreshCw size={12} className={refreshing ? 'spin' : ''} />
-                      {refreshing ? 'Generating...' : 'Generate Projects'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* 3. Quick Actions */}
             <div className="glass-card p-4">
@@ -408,60 +339,18 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Assessment (Domain, Roles, Courses) */}
+            {/* 1. Summary Section (Domain + Description) */}
             <div className="glass-card p-4 mb-4">
-              <h3 className="h5 fw-bold mb-4 d-flex align-items-center gap-2">
-                <Briefcase size={20} className="text-accent" /> Assessment Results
+              <h3 className="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+                <Zap size={20} className="text-warning" /> Executive Summary
               </h3>
-
-              {/* Banner */}
-              <div className="p-4 rounded mb-4" style={{ background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.1), transparent)', borderLeft: '4px solid var(--primary)' }}>
-                <h4 className="h6 fw-bold mb-2 text-primary">Recommended Domain</h4>
-                <div className="fs-4 fw-bold mb-2">{guidance.recommendedDomain || 'Pending Analysis'}</div>
-                <p className="text-secondary mb-0">{guidance.description || ''}</p>
-              </div>
-
-              {/* Split View: Roles & Courses */}
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <h4 className="h6 fw-bold mb-3">Suggested Roles</h4>
-                  <div className="d-flex flex-column gap-2 mb-3">
-                    {guidance.suggestedRoles && guidance.suggestedRoles.length > 0 ? (
-                      guidance.suggestedRoles.map((role: string, i: number) => (
-                        <div key={i} className="d-flex align-items-center gap-3 p-3 rounded border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                          <div className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 28, height: 28 }}>
-                            <span className="small fw-bold">{i + 1}</span>
-                          </div>
-                          <span className="fw-medium">{role}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-secondary small">No roles available</div>
-                    )}
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <h4 className="h6 fw-bold mb-3">Learning Path</h4>
-                  <div className="d-flex flex-column gap-2">
-                    {guidance.recommendedCourses && guidance.recommendedCourses.length > 0 ? (
-                      guidance.recommendedCourses.map((course: any, i: number) => {
-                        const name = typeof course === 'object' ? course.name : course;
-                        return (
-                          <div key={i} className="d-flex align-items-center gap-3 p-3 rounded border" style={{ backgroundColor: 'rgba(25, 135, 84, 0.1)', borderColor: 'rgba(25, 135, 84, 0.2)' }}>
-                            <BookOpen size={16} className="text-success flex-shrink-0" />
-                            <span className="fw-medium text-truncate" title={name}>{name}</span>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="text-secondary small">No courses available</div>
-                    )}
-                  </div>
-                </div>
+              <div className="p-4 rounded mb-0" style={{ background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.1), transparent)', borderLeft: '4px solid var(--primary)' }}>
+                <h4 className="h6 fw-bold mb-2 text-primary">Recommended Domain: <span className="text-dark">{guidance.recommendedDomain || 'Pending Analysis'}</span></h4>
+                <p className="text-secondary mb-0" style={{ lineHeight: '1.7' }}>{guidance.description || ' No summary available.'}</p>
               </div>
             </div>
 
-            {/* Colleges Grid */}
+            {/* 2. Recommended Colleges */}
             <div className="glass-card p-4 mb-4">
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="h5 fw-bold mb-0 d-flex align-items-center gap-2">
@@ -492,6 +381,98 @@ const ProfilePage: React.FC = () => {
                     Generate Colleges
                   </button>
                 </div>
+              )}
+            </div>
+
+            {/* 3. Suggested Roles */}
+            <div className="glass-card p-4 mb-4">
+              <h3 className="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+                <Briefcase size={20} className="text-accent" /> Suggested Roles
+              </h3>
+              <div className="row g-3">
+                {guidance.suggestedRoles && guidance.suggestedRoles.length > 0 ? (
+                  guidance.suggestedRoles.map((role: string, i: number) => (
+                    <div key={i} className="col-md-6">
+                      <div className="d-flex align-items-center gap-3 p-3 rounded border h-100" style={{ backgroundColor: 'rgba(25, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                        <div className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 32, height: 32 }}>
+                          <span className="fw-bold small">{i + 1}</span>
+                        </div>
+                        <span className="fw-medium">{role}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-12 text-secondary small">No roles available</div>
+                )}
+              </div>
+            </div>
+
+            {/* 4. Learning Path */}
+            <div className="glass-card p-4 mb-4">
+              <h3 className="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+                <BookOpen size={20} className="text-success" /> Learning Path
+              </h3>
+              <div className="d-flex flex-column gap-3">
+                {guidance.recommendedCourses && guidance.recommendedCourses.length > 0 ? (
+                  guidance.recommendedCourses.map((course: any, i: number) => {
+                    const name = typeof course === 'object' ? course.name : course;
+                    const duration = typeof course === 'object' ? course.duration : '';
+                    const details = typeof course === 'object' ? course.details : '';
+
+                    return (
+                      <div key={i} className="p-3 rounded border" style={{ backgroundColor: 'rgba(25, 135, 84, 0.05)', borderColor: 'rgba(25, 135, 84, 0.15)' }}>
+                        <div className="d-flex justify-content-between align-items-start mb-1">
+                          <span className="fw-bold text-success">{name}</span>
+                          {duration && <span className="badge bg-white text-dark border">{duration}</span>}
+                        </div>
+                        {details && <p className="text-secondary small mb-0 mt-1">{details}</p>}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-secondary small">No courses available</div>
+                )}
+              </div>
+            </div>
+
+            {/* 5. Skills */}
+            <div className="glass-card p-4 mb-4">
+              <h3 className="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+                <Gift size={20} className="text-info" /> Key Skills
+              </h3>
+              {report.skills && report.skills.length > 0 ? (
+                <div className="d-flex flex-wrap gap-2">
+                  {report.skills.map((skill, i) => (
+                    <span key={i} className="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill border border-info border-opacity-25 fs-6 fw-normal">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-secondary small">No skills generated. <button onClick={handleRefresh} className="btn-link p-0 align-baseline">Generate</button></div>
+              )}
+            </div>
+
+            {/* 6. Projects */}
+            <div className="glass-card p-4 mb-4">
+              <h3 className="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+                <Zap size={20} className="text-warning" /> Recommended Projects
+              </h3>
+              {report.projects && report.projects.length > 0 ? (
+                <div className="d-flex flex-column gap-3">
+                  {report.projects.map((p, i) => (
+                    <div key={i} className="d-flex align-items-center justify-content-between p-3 rounded border transition-transform hover-scale" style={{ backgroundColor: 'rgba(25, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                      <span className="fw-medium">{p.title || `Project ${i + 1}`}</span>
+                      {p.link && (
+                        <a href={p.link} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-light d-flex align-items-center gap-2">
+                          View <ExternalLink size={14} />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-secondary small">No projects generated. <button onClick={handleRefresh} className="btn-link p-0 align-baseline">Generate</button></div>
               )}
             </div>
 

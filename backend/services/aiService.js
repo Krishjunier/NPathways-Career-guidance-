@@ -7,7 +7,7 @@ const Groq = require("groq-sdk");
 let groq;
 try {
     groq = new Groq({
-        apiKey: process.env.groq_api_key,
+        apiKey: process.env.GROQ_API_KEY || process.env.groq_api_key,
     });
 } catch (e) {
     console.warn("Groq Init Warning:", e.message);
@@ -19,22 +19,46 @@ try {
  * @param {Array} answers - Array of answer objects {question, answer, category}
  * @returns {Promise<Object>} - Structrued recommendation
  */
-async function getAICareerSuggestion(profile, answers, aggregates = null) {
+async function getAICareerSuggestion(profile, answers, aggregates = null, plan = 'free') {
     try {
         // console.log("Checking API Key:", process.env.groq_api_key ? "Present" : "Missing");
         // if (!process.env.groq_api_key) throw new Error("API Key Missing"); // Bypass check as we hardcoded fallback above for robustness
 
+        let planContext = "";
+        if (plan === 'compass') {
+            planContext = `
+            USER IS A PREMIUM 'COMPASS' SUBSCRIBER.
+            - Provide extremely detailed and personalized insights.
+            - Focus deeply on Leadership potential, Stress management, and Creative conceptualization based on their answers.
+            - The "description" should be 4-5 sentences, very specific to their psychometric profile.
+            - Suggest 5 "nextSteps" instead of 3-4.
+            `;
+        } else if (plan === 'clarity') {
+            planContext = `
+            USER IS A 'CLARITY' BUNDLE SUBSCRIBER.
+            - Provide enhanced detailed insights.
+            - Focus on Work Style and Learning Style fit.
+            - The "description" should be 3-4 sentences.
+            `;
+        } else {
+            planContext = `
+            USER IS A FREE TIER USER.
+            - Provide standard, concise, high-quality guidance.
+            `;
+        }
+
         const systemPrompt = `
       You are an expert Career Counsellor AI.
       Analyze the user's psychometric test results (RIASEC, Intelligence, Emotional, Personality, Behavioral) and profile.
+      ${planContext}
       
       Generate a detailed career recommendation JSON containing:
       1. domain: The most suitable career field (e.g., "Data Science", "Digital Marketing").
       2. roles: Array of exactly 5 specific job titles.
       3. courses: Array of objects [{ "name": "Course Name", "duration": "Duration (e.g. 3-4 Years)", "details": "Brief description of the course scope and value" }] based on their "Target Country".
-      4. description: A personalized 2-3 sentence explanation of why this fits them.
+      4. description: A personalized explanation of why this fits them.
       5. skills: Array of top 5 skills they should learn.
-      6. nextSteps: Array of 3-4 actionable next steps.
+      6. nextSteps: Array of actionable next steps.
       7. colleges: Array of exactly 15 top colleges/universities [{ "name": "University Name", "course": "Specific Degree/Program", "country": "Country Name" }] located specifically in the user's "targetCountry" (or globally if not specified).
       8. projects: Array of 3 relevant real-world projects [{ "title": "Project Title", "link": "" }] that would strengthen their portfolio.
       

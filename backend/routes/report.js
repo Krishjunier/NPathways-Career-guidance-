@@ -171,10 +171,14 @@ router.get("/career-guidance/:userId", async (req, res) => {
       };
     });
 
+    const userPlan = user.purchasedBundles?.includes('compass_bundle') ? 'compass' :
+      user.purchasedBundles?.includes('clarity_bundle') ? 'clarity' : 'free';
+
     res.json({
       message: "Career guidance report generated successfully",
       report,
       colleges,
+      plan: userPlan
     });
   } catch (error) {
     console.error("Career Report Error:", error);

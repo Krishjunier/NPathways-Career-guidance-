@@ -100,13 +100,14 @@ export default function StressPage() {
 
             await apiService.submitTestAnswers(userId!, payload.answers as any);
 
-            const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
+            const submitUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/submit`;
+            const res = await fetch(submitUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
             if (!res.ok) throw new Error("Submission failed");
-            navigate("/dashboard");
+            navigate("/assessment-transition", { state: { userId, completedTestId: 'stress' } });
         } catch (err: any) {
             setError(err?.message || "Failed to submit.");
         } finally {
@@ -164,7 +165,7 @@ export default function StressPage() {
                         </div>
                         <div className="glass-card p-4 sticky-bottom mt-4">
                             <div className="d-flex justify-content-between">
-                                <button type="button" className="btn btn-ghost" onClick={() => navigate("/dashboard")}><ArrowLeft size={18} /> Dashboard</button>
+                                <button type="button" className="btn btn-ghost" onClick={() => navigate("/assessment-transition")}><ArrowLeft size={18} /> Back</button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting || !allAnswered()}>{submitting ? 'Submitting...' : 'Complete Assessment'}</button>
                             </div>
                         </div>

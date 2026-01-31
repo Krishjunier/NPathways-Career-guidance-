@@ -8,15 +8,15 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 // Keep Nodemailer as fallback
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '465'),
-    secure: (process.env.EMAIL_PORT === '465'),
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 10000
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000
 });
 
 /**
@@ -27,9 +27,15 @@ const transporter = nodemailer.createTransport({
  */
 const sendOTPEmail = async (email, otp, name) => {
     try {
+        console.log(`[EmailService] Attempting to send OTP to ${email}`);
+
+        // Helper for timeout - REMOVED to avoid premature termination since SMTP is working
+        // const withTimeout = ...
+
         // Method 1: Resend API (Works on Render)
         if (resend) {
             try {
+                console.log('[EmailService] Trying Resend API...');
                 const { data, error } = await resend.emails.send({
                     from: 'NPathways <onboarding@resend.dev>',
                     to: [email],
@@ -43,13 +49,14 @@ const sendOTPEmail = async (email, otp, name) => {
                     </div>
                     `
                 });
+
                 if (!error) {
                     console.log(`✅ OTP sent via Resend API: ${data.id}`);
                     return true;
                 }
                 console.error('⚠️ Resend Error:', error);
             } catch (rErr) {
-                console.error('⚠️ Resend Exception:', rErr);
+                console.error('⚠️ Resend Exception:', rErr.message);
             }
         }
 
@@ -80,12 +87,14 @@ const sendOTPEmail = async (email, otp, name) => {
             `
         };
 
+        console.log('[EmailService] Trying SMTP (Nodemailer)...');
+        // Removed custom timeout, letting nodemailer handle it with its own connectionTimeout setting
         const info = await transporter.sendMail(mailOptions);
         console.log(`✅ Email sent via SMTP: ${info.messageId}`);
         return true;
 
     } catch (error) {
-        console.error('❌ Email Failed (Likely Render Port Block):', error.message);
+        console.error('❌ Email Failed (Likely Render Port Block or Timeout):', error.message);
 
         // Fallback: Use console log for OTP
         console.warn("⚠️  Switched to CONSOLE OTP (Dev Mode):");

@@ -45,7 +45,8 @@ export default function AptitudePage() {
             setError(null);
             try {
                 // Fetching 'intelligence' questions as they map to aptitude (logical, math, spatial)
-                const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=intelligence");
+                const questionsUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/questions?type=intelligence`;
+                const res = await fetch(questionsUrl);
                 if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
                 const data: any = await res.json();
@@ -148,8 +149,7 @@ export default function AptitudePage() {
                 throw new Error(txt || `Submission failed (${res.status})`);
             }
 
-            // Navigate to Emotional (EQ) test next
-            navigate("/psychometric/emotional", { state: { userId } });
+            navigate("/assessment-transition", { state: { userId, completedTestId: 'aptitude' } });
         } catch (err: any) {
             console.error("AptitudePage submit error:", err);
             setError(err?.message || "Failed to submit answers. Please try again.");

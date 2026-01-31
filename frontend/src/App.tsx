@@ -26,7 +26,7 @@ import FreeBundlePage from './pages/FreeBundlePage';
 import ClarityBundlePage from './pages/ClarityBundlePage';
 import CompassBundlePage from './pages/CompassBundlePage';
 import PlanSelectionPage from './pages/PlanSelectionPage';
-
+import AssessmentTransitionPage from './pages/AssessmentTransitionPage';
 
 function App() {
   return (
@@ -38,6 +38,7 @@ function App() {
         <Route path="/select-plan" element={<PlanSelectionPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/information" element={<ChatPage />} />
+        <Route path="/assessment-transition" element={<AssessmentTransitionPage />} />
 
         {/* Bundle Pages */}
         <Route path="/bundle/free" element={<FreeBundlePage />} />

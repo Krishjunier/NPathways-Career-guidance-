@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, Zap, Compass, ArrowRight } from 'lucide-react';
 
 const PlanSelectionPage = () => {
@@ -14,19 +14,39 @@ const PlanSelectionPage = () => {
         // Store the selected plan in localStorage
         localStorage.setItem('userPlan', selectedPlan);
 
-        // If paid plan, navigate to payment, otherwise go to dashboard
-        if (selectedPlan === 'free') {
-            navigate('/dashboard');
-        } else {
+        const userStr = localStorage.getItem('cc_user');
+        const isLoggedIn = !!userStr;
+
+        // If paid plan, navigate to payment
+        if (selectedPlan !== 'free') {
             const amount = selectedPlan === 'clarity' ? 450 : 699;
             const item = selectedPlan === 'clarity' ? 'clarity_bundle' : 'compass_bundle';
             let userId = null;
             try {
-                const u = JSON.parse(localStorage.getItem('cc_user') || '{}');
-                userId = u.userId || u.id || u._id;
+                if (userStr) {
+                    const u = JSON.parse(userStr);
+                    userId = u.userId || u.id || u._id;
+                }
             } catch { }
 
+            // If not logged in, we might want to capture payment intent or force login. 
+            // For now, let's assume valid flow is Login -> Plan or Plan -> Register -> Payment.
+            // If we send them to payment without UserID, payment page might break or handle it.
+            // Let's send to PaymentPage, assuming it handles guest/login flow if needed, 
+            // OR if strictly restricted:
+            if (!isLoggedIn) {
+                navigate('/information', { state: { targetPlan: selectedPlan } });
+                return;
+            }
+
             navigate('/payment', { state: { amount, item, userId } });
+        } else {
+            // Free plan
+            if (isLoggedIn) {
+                navigate('/dashboard');
+            } else {
+                navigate('/information');
+            }
         }
     };
 
@@ -34,10 +54,16 @@ const PlanSelectionPage = () => {
         <div className="min-vh-100 bg-surface d-flex flex-column font-sans text-primary">
             {/* Header */}
             <nav className="py-4 px-5 bg-white border-bottom sticky-top">
-                <div className="container">
-                    <span className="fw-bolder h5 mb-0 text-dark" style={{ fontFamily: 'Montserrat' }}>
-                        NPathways
-                    </span>
+                <div className="container d-flex justify-content-between align-items-center">
+                    <Link to="/" className="text-decoration-none">
+                        <span className="fw-bolder h5 mb-0 text-dark" style={{ fontFamily: 'Montserrat' }}>
+                            NPathways
+                        </span>
+                    </Link>
+                    {/* Optional: Login Link if not logged in */}
+                    <Link to="/login" className="btn btn-sm btn-outline-dark rounded-pill px-4">
+                        Login
+                    </Link>
                 </div>
             </nav>
 

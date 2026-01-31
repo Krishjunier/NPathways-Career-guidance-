@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Target, Zap, Compass, TrendingUp } from 'lucide-react';
 import { apiService } from '../services/api';
 
@@ -52,9 +52,11 @@ const FreeDashboard = () => {
         <div className="min-vh-100 bg-surface d-flex flex-column font-sans text-primary">
             {/* Navbar */}
             <nav className="py-4 px-5 bg-white border-bottom sticky-top z-10 d-flex justify-content-between align-items-center">
-                <span className="fw-bolder h5 mb-0" style={{ fontFamily: 'Montserrat' }}>
-                    NPathways <span className="fw-light text-secondary">Dashboard</span>
-                </span>
+                <Link to="/" className="text-decoration-none text-dark">
+                    <span className="fw-bolder h5 mb-0" style={{ fontFamily: 'Montserrat' }}>
+                        NPathways <span className="fw-light text-secondary">Dashboard</span>
+                    </span>
+                </Link>
                 <div className="d-flex align-items-center gap-3">
                     <span className="badge bg-success text-white px-3 py-1">FREE PLAN</span>
                     <div className="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold" style={{ width: 36, height: 36 }}>
@@ -123,11 +125,12 @@ const FreeDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Quick Stats */}
+                    {/* Quick Stats & Clarity Promo */}
                     <div className="col-lg-4">
-                        <div className="glass-card h-100 p-4 bg-white border">
-                            <h3 className="h6 fw-bold mb-4">Your Progress</h3>
-                            <div className="d-flex flex-column gap-4">
+                        <div className="glass-card h-100 p-4 bg-white border d-flex flex-column gap-4">
+                            {/* Progress Section */}
+                            <div>
+                                <h3 className="h6 fw-bold mb-3">Your Progress</h3>
                                 <div>
                                     <div className="d-flex justify-content-between mb-2">
                                         <span className="small text-secondary">Assessment Progress</span>
@@ -140,15 +143,32 @@ const FreeDashboard = () => {
                                         ></div>
                                     </div>
                                 </div>
-                                <div className="border-top pt-3">
-                                    <p className="small text-secondary mb-2">Unlock more insights</p>
-                                    <button
-                                        onClick={() => handleUpgrade('clarity')}
-                                        className="btn btn-outline-primary btn-sm w-100 rounded-3"
-                                    >
-                                        Upgrade to Premium
-                                    </button>
+                            </div>
+
+                            {/* Clarity Promo Section */}
+                            <div className="p-3 rounded border border-primary border-opacity-25 bg-primary bg-opacity-5 mt-auto">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <div className="badge bg-primary text-white px-2 py-1 rounded-pill small">
+                                        <Zap size={12} className="me-1" /> Best Value
+                                    </div>
+                                    <span className="small text-primary fw-bold">Clarity Bundle</span>
                                 </div>
+                                <h4 className="fw-bold h6 text-dark mb-2">Unlock Deeper Insights</h4>
+                                <p className="small text-secondary mb-3" style={{ fontSize: '0.85rem' }}>
+                                    Get <strong>Work Style</strong> and <strong>Learning Style</strong> assessments + detailed AI report.
+                                </p>
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <span className="fw-bold h5 mb-0 text-primary">₹450</span>
+                                        <small className="text-secondary ms-2 text-decoration-line-through">₹999</small>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => handleUpgrade('clarity')}
+                                    className="btn btn-primary w-100 rounded-3 btn-sm fw-bold py-2"
+                                >
+                                    Get Clarity Bundle
+                                </button>
                             </div>
                         </div>
                     </div>

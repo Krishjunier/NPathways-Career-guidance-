@@ -46,7 +46,8 @@ export default function RiaSecPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/questions?type=riasec");
+        const questionsUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/questions?type=riasec`;
+        const res = await fetch(questionsUrl);
         if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
 
         const data: any = await res.json();
@@ -166,7 +167,8 @@ export default function RiaSecPage() {
         completed: true,
       };
 
-      const res = await fetch("https://npathways-career-guidance.onrender.com/api/test/submit", {
+      const submitUrl = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/test/submit`;
+      const res = await fetch(submitUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -177,7 +179,7 @@ export default function RiaSecPage() {
         throw new Error(txt || `Submission failed (${res.status})`);
       }
 
-      navigate("/psychometric/aptitude", { state: { userId } });
+      navigate("/assessment-transition", { state: { userId, completedTestId: 'riasec' } });
     } catch (err: any) {
       console.error("RiaSecPage submit error:", err);
       setError(err?.message || "Failed to submit answers. Please try again.");

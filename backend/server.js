@@ -48,6 +48,17 @@ loadRoute("./routes/chat", "/api/chat");
 loadRoute("./routes/scoring", "/api/scoring");
 loadRoute("./routes/payment", "/api/payment");
 
+// Mongoose Connection Middleware (Important for Vercel/Serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ message: "Database connection failed" });
+  }
+});
+
 // Root route for sanity check
 app.get("/", (req, res) => {
   res.send("<h2>Career Counselling API is Running 🚀</h2><p>Use /api/health to check status.</p>");
@@ -69,18 +80,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-(async () => {
-  try {
-    await connectToDatabase();
+// Export app for Vercel
+module.exports = app;
 
-
-
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`[Storage] Mode: Mongoose/MongoDB`);
-    });
-  } catch (err) {
-    console.error("Failed to start server due to DB connection error:", err.message);
-    process.exit(1);
-  }
-})();
+// Only listen if run directly (Local Development)
+if (require.main === module) {
+  (async () => {
+    try {
+      await connectToDatabase();
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+        console.log(`[Storage] Mode: Mongoose/MongoDB`);
+      });
+    } catch (err) {
+      console.error("Failed to start server due to DB connection error:", err.message);
+      process.exit(1);
+    }
+  })();
+}

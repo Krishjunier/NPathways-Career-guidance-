@@ -116,7 +116,7 @@ export default function WorkStylePage() {
 
             if (!res.ok) throw new Error("Submission failed");
 
-            navigate("/dashboard");
+            navigate("/assessment-transition", { state: { userId, completedTestId: 'workstyle' } });
 
         } catch (err: any) {
             setError(err?.message || "Failed to submit.");
@@ -180,7 +180,7 @@ export default function WorkStylePage() {
                         </div>
                         <div className="glass-card p-4 sticky-bottom mt-4">
                             <div className="d-flex justify-content-between">
-                                <button type="button" className="btn btn-ghost" onClick={() => navigate("/dashboard")}><ArrowLeft size={18} /> Dashboard</button>
+                                <button type="button" className="btn btn-ghost" onClick={() => navigate("/assessment-transition")}><ArrowLeft size={18} /> Back</button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting || !allAnswered()}>{submitting ? 'Submitting...' : 'Complete Assessment'}</button>
                             </div>
                         </div>
