@@ -1,7 +1,19 @@
 [build]
-  base = "frontend"
-  command = "CI=false npm install && CI=false npm run build"
-  publish = "build"
+  base = "" 
+  publish = "frontend/build"
+  command = "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[context.production.environment]
+  REACT_APP_API_BASE_URL = ""
 
 [[redirects]]
   from = "/*"
