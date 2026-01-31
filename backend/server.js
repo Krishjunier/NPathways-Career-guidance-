@@ -20,16 +20,35 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins for Vercel/Netlify cross-domain
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // Middleware (Netlify Prefix Normalizer)
+// We need to ensure the request path matches what the express router expects (e.g. /api/auth/...)
 app.use((req, res, next) => {
-  if (req.url.startsWith("/.netlify/functions")) {
+  // 1. Strip the basic Netlify function prefix
+  if (req.url.startsWith("/.netlify/functions/api")) {
+    req.url = req.url.replace("/.netlify/functions/api", "");
+  } else if (req.url.startsWith("/.netlify/functions")) {
     req.url = req.url.replace("/.netlify/functions", "");
   }
+
+  // 2. Ensure it starts with /api if it doesn't (unless it's root or health)
+  if (!req.url.startsWith("/api") && req.url !== "/" && !req.url.includes("health")) {
+    // Check if it's already a partial path e.g. /auth/send-otp
+    req.url = `/api${req.url}`;
+  }
+
+  // 3. Prevent double /api/api
+  if (req.url.startsWith("/api/api")) {
+    req.url = req.url.replace("/api/api", "/api");
+  }
+
   next();
 });
 
