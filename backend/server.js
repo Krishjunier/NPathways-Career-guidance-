@@ -29,8 +29,9 @@ app.use(morgan("dev"));
 const loadRoute = (path, urlPrefix) => {
   try {
     const route = require(path);
-    app.use(urlPrefix, route);
-    console.log(`[Routes] Loaded ${path} at ${urlPrefix}`);
+    app.use(urlPrefix, route); // Standard /api/...
+    app.use(`/.netlify/functions${urlPrefix}`, route); // Netlify Rewrite Path
+    console.log(`[Routes] Loaded ${path} at ${urlPrefix} & /.netlify/functions${urlPrefix}`);
   } catch (e) {
     console.error(`[Routes] Failed to load ${path}:`, e.message);
     // console.error(e.stack); // Uncomment for full stack
@@ -50,6 +51,11 @@ loadRoute("./routes/payment", "/api/payment");
 
 // Mongoose Connection Middleware (Important for Vercel/Serverless)
 app.use(async (req, res, next) => {
+  // Skip DB connection for simple health checks to reduce latency
+  if (req.path === '/' || req.path.includes('/health')) {
+    return next();
+  }
+
   try {
     await connectToDatabase();
     next();

@@ -22,11 +22,11 @@ You're almost there! Your code is configured. Now follow these steps on **netlif
 ## Connecting Frontend (Vercel) to Backend (Netlify)
 
 Once Netlify deployment is successful:
-1.  Copy your Netlify URL (e.g., `https://your-site.netlify.app`).
+1.  Copy your Netlify URL: **`https://jocular-kataifi-603f16.netlify.app`**
 2.  Go to your **Vercel Project Settings**.
 3.  Add/Edit Environment Variable:
     *   Key: `REACT_APP_API_BASE_URL`
-    *   Value: `https://your-site.netlify.app` (Just the domain, no `/api` suffix).
+    *   Value: `https://jocular-kataifi-603f16.netlify.app`
 4.  **Redeploy Vercel** (Go to Deployments -> Redeploy).
 
 Now your Vercel frontend will talk to your Netlify backend!
