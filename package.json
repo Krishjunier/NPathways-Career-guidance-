@@ -10,7 +10,8 @@
     "frontend": "npm start --prefix frontend"
   },
   "dependencies": {
-    "dotenv": "^17.2.2"
+    "dotenv": "^17.2.2",
+    "serverless-http": "^4.0.0"
   },
   "engines": {
     "node": ">=16.0.0"
