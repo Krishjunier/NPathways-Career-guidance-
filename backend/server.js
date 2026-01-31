@@ -25,13 +25,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+// Middleware (Netlify Prefix Normalizer)
+app.use((req, res, next) => {
+  if (req.url.startsWith("/.netlify/functions")) {
+    req.url = req.url.replace("/.netlify/functions", "");
+  }
+  next();
+});
+
 // Helper to load routes
 const loadRoute = (path, urlPrefix) => {
   try {
     const route = require(path);
-    app.use(urlPrefix, route); // Standard /api/...
-    app.use(`/.netlify/functions${urlPrefix}`, route); // Netlify Rewrite Path
-    console.log(`[Routes] Loaded ${path} at ${urlPrefix} & /.netlify/functions${urlPrefix}`);
+    app.use(urlPrefix, route);
+    console.log(`[Routes] Loaded ${path} at ${urlPrefix}`);
   } catch (e) {
     console.error(`[Routes] Failed to load ${path}:`, e.message);
     // console.error(e.stack); // Uncomment for full stack
